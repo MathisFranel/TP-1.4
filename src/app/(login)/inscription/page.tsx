@@ -3,7 +3,7 @@ import {TextInput, Group, PasswordInput} from '@mantine/core';
 import { useForm ,zodResolver} from '@mantine/form';
 import z from 'zod';
 import Link from 'next/link'
-import { Button } from "tp-kit/components";
+import {Button, NoticeMessage} from "tp-kit/components";
 
 
 export default function page(){
@@ -30,6 +30,7 @@ export default function page(){
     return <>
         <p>INSCRIPTION</p>
         <form onSubmit={form.onSubmit((values) => console.log(values))}>
+            <NoticeMessage message={"Erreur"}></NoticeMessage>
             <TextInput
                 withAsterisk
                 description={"Le nom qui sera utilisé pour vos commandes"}

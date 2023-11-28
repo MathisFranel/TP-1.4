@@ -3,17 +3,19 @@ import {TextInput, Group, PasswordInput} from '@mantine/core';
 import { useForm ,zodResolver} from '@mantine/form';
 import z from 'zod';
 import Link from 'next/link'
-import {Button, NoticeMessage} from "tp-kit/components";
+import {Button, ZodI18nProvider, NoticeMessage, useZodI18n} from "tp-kit/components";
 
 
 export default function page(){
 
     const schema = z.object({
-        name : z.string().nonempty('Le nom ne peut pas être vide'),
-        email: z.string().email({ message: 'Invalid email' }),
-        password: z.string().min(6,"password must contain at least 6 carateres")
+        name : z.string().nonempty(),
+        email: z.string().email(),
+        password: z.string().min(6,)
     });
 
+
+    useZodI18n(z);
     const form = useForm(
         {
             validate: zodResolver(schema),
@@ -63,6 +65,7 @@ export default function page(){
             </Group>
 
         </form>
+        
 
 
     </>

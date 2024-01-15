@@ -44,7 +44,7 @@ enum OrderStatusEnum {
 
 model Order {
   id Int @id @default(autoincrement())
-  
+  userId String @db.Uuid()
   createdAt DateTime @default(now())
   completedAt DateTime?
 
@@ -52,6 +52,7 @@ model Order {
   total Float
 
   lines OrderLines[]
+
 }
 
 model OrderLines {

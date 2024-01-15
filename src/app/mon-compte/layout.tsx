@@ -7,7 +7,15 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const orders = await prisma.order.findMany();
 
   return (
-    <>
+    <div className  ={"flex"}>
+        
+            {/* Children */}
+
+            <SectionContainer wrapperClassName="py-12  min-h-[80vh]">
+                <div className="bg-white rounded-lg p-6 shadow-lg">
+                    {children}
+                </div>
+            </SectionContainer>
       {/* Orders list */}
       <SectionContainer wrapperClassName="py-24 min-h-[80vh]">
         <div className="bg-white rounded-lg p-6 shadow-lg">
@@ -15,8 +23,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
         </div>
       </SectionContainer>
 
-      {/* Children */}
-      {children}
-    </>
+
+
+    </div>
   );
 }

@@ -1,94 +1,107 @@
-"use client"
-import {TextInput, Group, PasswordInput} from '@mantine/core';
-import { useForm ,zodResolver} from '@mantine/form';
-import z from 'zod';
-import Link from 'next/link'
+'use client';
+
+import { z } from 'zod';
+import {useForm, zodResolver} from "@mantine/form";
+import {PasswordInput, TextInput} from "@mantine/core";
+import React, {useEffect, useState} from "react";
 import {Button, NoticeMessage, useZodI18n} from "tp-kit/components";
-import {createClientComponentClient} from "@supabase/auth-helpers-nextjs";
 import {useRouter} from "next/navigation";
-import {useState} from "react";
+import {createClientComponentClient} from "@supabase/auth-helpers-nextjs";
+import {getUser} from "../../../utils/supabase";
 
+const schema = z.object({
+    email: z.string().email().nonempty(),
+    password: z.string().min(6)
+});
 
-export default function page(){
+type FormValues = z.infer<typeof schema>;
 
-    type FormValues = z.infer<typeof schema>;
+export default function Connexion(){
+    useZodI18n(z);
+    const form = useForm<FormValues>({
+        initialValues: {
+            email: '',
+            password: '',
+        },
 
-    const router = useRouter()
-    const supabase = createClientComponentClient()
-    const schema = z.object({
-        email: z.string().email(),
-        password: z.string().min(6)
+        validate: zodResolver(schema),
     });
+
+    const supabase = createClientComponentClient();
+
     const [created, setCreated] = useState(false);
     const [isValid, setIsValid] = useState(false);
     const [message, setMessage] = useState("");
 
-    useZodI18n(z);
+    const router = useRouter();
 
-    const form = useForm(
-        {
-            validate: zodResolver(schema),
-        initialValues: {
-            email: '',
-            password:''
+    useEffect(() => {
+        getUser(supabase).then((user) => {
+            if (user.session) {
+                router.push('/mon-compte')
+            }
+        });
+    }, []);
 
-        },
-
-
-    });
     const handleSubmit = async (values: FormValues) => {
-        console.log(values);
-        const {error} = await supabase.auth.signUp(
+        const { error } = await supabase.auth.signInWithPassword(
             {
                 email: values.email,
                 password: values.password,
-                options: {
-                    emailRedirectTo: 'http://localhost:3000/api/auth/callback',
-                    data: {}
-                }
             }
         )
+
+        if (!error) {
+            router.push('/')
+        }
+
+        console.log(error)
+        setCreated(true);
+        setMessage((error) ? error.message : "Vous êtes connecté")
+        setIsValid((!error))
     }
 
+    return (
+        <form
+            className="flex items-center flex-col space-y-6 w-"
+            onSubmit={form.onSubmit((values) => handleSubmit(values))}
+        >
+            <p
+                className="text-left w-full text-2xl"
+            >
+                Connexion
+            </p>
 
-        return <>
-
-            <p>CONNEXION</p>
             {
                 created &&
                 <NoticeMessage
-                    className="w-full"
                     type={isValid ? "success" : "error"}
                     message={message}
                 />
             }
-            <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
-                <TextInput
-                    withAsterisk
-                    label="Email"
-                    placeholder="your@email.com"
-                    {...form.getInputProps('email')}
-                />
 
-                <PasswordInput
-                    withAsterisk
-                    mt="md"
-                    label="Password"
-                    {...form.getInputProps('password' )}
-                />
+            <TextInput
+                className="w-full"
+                required
+                label="Adresse email"
+                {...form.getInputProps('email')}
+            />
 
-                <Group  className="flex-columns justify-center" p={'lg'}  >
-                    <Button
-                        fullWidth={true}
-                        type="submit"
-                    >
-                        Connexion
-                    </Button>
-                    <Link href={"/inscription"}>Créer un compte</Link>
-                </Group>
+            <PasswordInput
+                className="w-full"
+                required
+                label="Mot de passe"
+                {...form.getInputProps('password')}
+            />
 
-            </form>
+            <Button
+                className="w-full cursor-pointer"
+                type="submit"
+            >
+                Se connecter
+            </Button>
 
-
-    </>
+            <a onClick={() => router.push('/inscription')} className="">Créer un compte</a>
+        </form>
+    );
 }
